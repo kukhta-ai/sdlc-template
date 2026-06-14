@@ -9,6 +9,7 @@ repo root is the maintainer project. The generated-project scaffold lives under 
 AGENTS.md                 Maintainer instructions for this repository.
 CONTRIBUTING.md           Maintainer quality gate and contribution rules.
 docs/template-design.md   Product design record for the template itself.
+docs/sdlc-persistent-subagent-sequence.html  Maintainer visual reference for the SDLC flow.
 backlog/                  Real Backlog.md backlog for sdlc-template work.
 scripts/init-project.sh   Creates a new project from the template payload.
 

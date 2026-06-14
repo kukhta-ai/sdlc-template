@@ -30,9 +30,11 @@ jobs:
           test -f template/scripts/setup.sh
           test -f template/docs/SDLC.md
           test -f template/docs/task-writing-conventions.md
+          test -f docs/sdlc-persistent-subagent-sequence.html
           test -d backlog
           test -d template/backlog
           test ! -f docs/SDLC.md
+          test ! -f template/docs/sdlc-persistent-subagent-sequence.html
           test ! -f scripts/setup.sh
 
       - name: Whitespace check
