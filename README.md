@@ -25,6 +25,49 @@ The root and payload intentionally have different meanings. When an agent is wor
 follows root `AGENTS.md`. When a new project is created from `template/`, that project follows the copied
 `AGENTS.md` at its own root.
 
+## How To Use The Context
+
+This repository has two contexts that must not be blended:
+
+| Work you are doing | Use this context | Do not treat as active |
+|---|---|---|
+| Maintaining `sdlc-template` itself | Root `AGENTS.md`, root `README.md`, `docs/template-design.md`, root `backlog/` | `template/AGENTS.md`, `template/backlog/` |
+| Changing what new projects receive | The relevant files under `template/`, read as if they are at a generated project root | Root-only paths such as `template/...` inside payload prose |
+| Creating a new project | `scripts/init-project.sh` and this README | Root backlog tasks from this maintainer repo |
+| Working in a generated project | The copied `AGENTS.md`, copied `docs/`, copied `backlog/` in that generated repo | This maintainer repository's root files |
+
+For template-maintenance work, start with:
+
+```bash
+backlog task list --plain
+backlog sequence list
+```
+
+Then read the root context that matches the change:
+
+- Root workflow or contributor guidance: `AGENTS.md`, `CONTRIBUTING.md`, this `README.md`.
+- Product intent and boundary decisions: `docs/template-design.md`.
+- Generated-project behavior: the matching file under `template/`.
+- Project initialization behavior: `scripts/init-project.sh` plus `template/scripts/setup.sh`.
+
+When editing payload files, mentally remove the `template/` prefix. For example, `template/AGENTS.md` will
+become `AGENTS.md` in the generated project. Text inside that file should therefore refer to `docs/SDLC.md`,
+not `template/docs/SDLC.md`, unless it is explicitly explaining this maintainer repository.
+
+When asking an agent to work here, be explicit about the context:
+
+```text
+Update the root maintainer README.
+```
+
+```text
+Update the generated-project payload README under template/.
+```
+
+```text
+Change the initializer script that copies template/ into a new repo.
+```
+
 ## Create A New Project
 
 ```bash
