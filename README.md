@@ -1,93 +1,108 @@
-# SDLC Template
+# SDLC Template Maintainer Repository
 
-A **stack-agnostic** starting point for a new repository that is developed by an **autonomous, BMAD-based
-agent SDLC**: specialist agent personas, a Backlog.md task graph, sequential git branching, and human gates
-at the points that matter. Clone it, point an agent at `AGENTS.md`, and the project builds itself task by
-task under a process you can audit.
+This repository maintains a reusable, stack-agnostic project template for BMAD-based agent development. The
+repo root is the maintainer project. The generated-project scaffold lives under `template/`.
 
-It ships the **process layer** only — nothing here assumes a language or toolchain. You plug in your stack's
-build/lint/test commands in one place (the **quality gate**), and the whole process (pre-commit, CI, the
-backlog Definition of Done) refers back to it.
+## Layout
 
-## What's in it
+```text
+AGENTS.md                 Maintainer instructions for this repository.
+CONTRIBUTING.md           Maintainer quality gate and contribution rules.
+docs/template-design.md   Product design record for the template itself.
+docs/sdlc-persistent-subagent-sequence.html  Maintainer visual reference for the SDLC flow.
+backlog/                  Real Backlog.md backlog for sdlc-template work.
+scripts/init-project.sh   Creates a new project from the template payload.
 
-```
-AGENTS.md            Agent front door: 3 hard rules, the 7-phase BMAD SDLC, state tracker, per-story loop.
-CLAUDE.md            → symlink to AGENTS.md (so Claude Code reads the same front door).
-docs/
-  SDLC.md            The full process as a Mermaid sequence diagram (the authoritative flow).
-  task-writing-conventions.md   The what-not-how acceptance-criteria contract every task obeys.
-  template-design.md  Why this template is shaped the way it is (delete once you've read it).
-CONTRIBUTING.md      Quality gate (you fill in) + branching / PR / versioning conventions.
-CHANGELOG.md         Keep-a-Changelog stub.
-backlog/             Backlog.md, initialized: config.yml (placeholder name + DoD) + empty task dirs.
-.bmad/sdlc-state.yaml  Blank SDLC state tracker — Step 0 fills it in.
-.claude/             Hookify rules that forbid hand-editing backlog/ (CLI-only discipline, enforced).
-.github/             CI workflow (placeholder quality gate) + PR template.
-scripts/setup.sh     Installs the agent tooling (Backlog.md + BMAD modules) at pinned versions.
-.gitignore           Transient/local state only — BMAD's install is committed to your project, not ignored.
+template/                 Files copied into a generated project root.
+  AGENTS.md               Generated-project agent front door.
+  CONTRIBUTING.md         Generated-project engineering conventions.
+  README.md               Generated-project onboarding.
+  docs/                   Generated-project SDLC docs.
+  backlog/                Empty generated-project seed backlog.
+  scripts/setup.sh        Generated-project BMAD/Backlog bootstrap.
 ```
 
-The template itself ships **without** the BMAD install. You add it in your project: `scripts/setup.sh` runs
-the standard `npx bmad-method install` at init, creating `_bmad/` + `.claude/skills/bmad-*`, which you then
-**commit** — the `.gitignore` does not exclude them, so the SDLC tooling lives in your repo at a pinned
-version (the same as the source project). Only personal `_bmad/custom/*.user.toml` stays local.
+The root and payload intentionally have different meanings. When an agent is working in this repository, it
+follows root `AGENTS.md`. When a new project is created from `template/`, that project follows the copied
+`AGENTS.md` at its own root.
 
-## Bootstrap a new project
+## How To Use The Context
 
-1. **Start the repo from this template** (clone, copy, or "Use this template" on GitHub). Initialize git and
-   create the working branches: `git checkout -b dev`.
-2. **Install the agent tooling:**
-   ```
-   bash scripts/setup.sh
-   ```
-   This installs the Backlog.md CLI and the BMAD modules at pinned versions — see
-   [Dependencies](#dependencies) for what each is and the by-hand commands.
-3. **Name the project** (via the CLI — never hand-edit `backlog/`):
-   ```
-   backlog config set project_name "<your-project>"   # see: backlog config --help
-   ```
-   and replace `__PROJECT_NAME__` wherever it appears.
-4. **Define your quality gate** — fill in `CONTRIBUTING.md` → "Quality gate" with your stack's real
-   build/lint/test commands, then mirror them into `.github/workflows/ci.yml`, the pre-commit hook, and
-   `backlog/config.yml` → `definition_of_done`.
-5. **Point your agent at `AGENTS.md`** and begin the SDLC at Phase 1. For a greenfield project the early
-   phases produce the design set; if you already have committed design docs in `docs/`, the early phases
-   become conformance reviews (see `AGENTS.md` → "How the design set maps onto BMAD").
+This repository has two contexts that must not be blended:
 
-## What to customize per project
+| Work you are doing | Use this context | Do not treat as active |
+|---|---|---|
+| Maintaining `sdlc-template` itself | Root `AGENTS.md`, root `README.md`, `docs/template-design.md`, root `backlog/` | `template/AGENTS.md`, `template/backlog/` |
+| Changing what new projects receive | The relevant files under `template/`, read as if they are at a generated project root | Root-only paths such as `template/...` inside payload prose |
+| Creating a new project | `scripts/init-project.sh` and this README | Root backlog tasks from this maintainer repo |
+| Working in a generated project | The copied `AGENTS.md`, copied `docs/`, copied `backlog/` in that generated repo | This maintainer repository's root files |
 
-- **`__PROJECT_NAME__`** placeholders (backlog config, etc.).
-- **The quality gate** (`CONTRIBUTING.md`) and its mirrors (CI, pre-commit, backlog DoD).
-- **Your language toolchain** — add it as your first groundwork, and its ignores (`.gitignore`).
-- **`docs/`** — add your design set; `AGENTS.md` mandates reading it before any work.
-- **Delete the meta files** once you've absorbed them: this `README.md` (rewrite for your project) and
-  `docs/template-design.md`.
+For template-maintenance work, start with:
 
-## Dependencies
+```bash
+backlog task list --plain
+backlog sequence list
+```
 
-This template ships the **process layer** only. The agent SDLC tooling is installed at project init by
-`scripts/setup.sh` (the standard `npx bmad-method install`) at pinned versions and **committed to your
-project** (the `.gitignore` does not exclude `_bmad/` or `.claude/skills/`; only personal config stays local):
+Then read the root context that matches the change:
 
-- **[Backlog.md](https://github.com/MrLesk/Backlog.md)** — the markdown task tracker the whole SDLC runs on
-  (`backlog/`). Installed as a global CLI.
-- **BMAD** modules, via `npx bmad-method install`:
-  - `bmm` — the core method: the planning + build personas (analyst, pm, architect, sm, dev, tea, …) and
-    their workflows.
-  - `tea` — test architecture: the `testarch-*` workflows.
-  - `automator` — the autonomous per-story build/review loop (SDLC Phase 5).
+- Root workflow or contributor guidance: `AGENTS.md`, `CONTRIBUTING.md`, this `README.md`.
+- Product intent and boundary decisions: `docs/template-design.md`.
+- Generated-project behavior: the matching file under `template/`.
+- Project initialization behavior: `scripts/init-project.sh` plus `template/scripts/setup.sh`.
 
-  By hand, equivalently:
-  ```
-  npx bmad-method install --modules bmm,tea
-  npx bmad-method install --modules automator
-  ```
-  After installing, record the exact versions into `.bmad/sdlc-state.yaml` → `tooling`.
+When editing payload files, mentally remove the `template/` prefix. For example, `template/AGENTS.md` will
+become `AGENTS.md` in the generated project. Text inside that file should therefore refer to `docs/SDLC.md`,
+not `template/docs/SDLC.md`, unless it is explicitly explaining this maintainer repository.
 
-**To run that tooling at all** you need **Node.js + npm** (only to *run* Backlog.md and BMAD via `npx`) and
-an agent harness that reads `AGENTS.md` / `CLAUDE.md` and can invoke the BMAD skills (e.g. Claude Code).
+When asking an agent to work here, be explicit about the context:
 
-> `scripts/setup.sh` installs the **agent tooling only.** Your project's own language toolchain (compiler,
-> linter, test runner) is a separate concern — add it as your first groundwork and wire its commands into
-> the **quality gate** (`CONTRIBUTING.md`), CI, the pre-commit hook, and `backlog/config.yml`.
+```text
+Update the root maintainer README.
+```
+
+```text
+Update the generated-project payload README under template/.
+```
+
+```text
+Change the initializer script that copies template/ into a new repo.
+```
+
+## Create A New Project
+
+```bash
+bash scripts/init-project.sh ../my-project --name "My Project"
+```
+
+Useful options:
+
+```bash
+bash scripts/init-project.sh ../my-project --name "My Project" --install-sdlc-tools
+bash scripts/init-project.sh ../my-project --name "My Project" --force
+bash scripts/init-project.sh ../my-project --name "My Project" --no-git
+```
+
+The init script copies `template/` into the destination root, replaces placeholders, initializes git unless
+`--no-git` is used, checks out `dev`, updates the generated backlog project name when the `backlog` CLI is
+available, and optionally runs the generated project's `scripts/setup.sh`.
+
+## Maintain The Template
+
+Use the root backlog for work on this repository:
+
+```bash
+backlog task list --plain
+backlog sequence list
+```
+
+Run the maintainer quality gate before review:
+
+```bash
+bash -n scripts/init-project.sh
+bash -n template/scripts/setup.sh
+git diff --check
+```
+
+For payload changes, read the copied file in `template/` and reason from the perspective of a generated
+project root. Do not add maintainer-only paths such as `template/...` to generated-project instructions.

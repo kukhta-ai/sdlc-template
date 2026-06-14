@@ -29,8 +29,8 @@ cat <<'EOF'
 
 Next steps:
   1. Set this project's name in the backlog (operate backlog ONLY via the CLI, never by hand):
-       backlog config set project_name "<name>"     # see: backlog config --help
-       # (or re-run 'backlog init' if your Backlog.md version prefers that flow)
+       backlog config set projectName "<name>"     # see: backlog config --help
+       # (or check `backlog config --help` if your Backlog.md version uses a different key)
   2. Fill in the Quality gate in CONTRIBUTING.md, and mirror it into:
        - backlog/config.yml  > definition_of_done
        - .github/workflows/ci.yml  (the gate steps)
