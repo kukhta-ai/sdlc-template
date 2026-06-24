@@ -5,9 +5,9 @@ agent SDLC**: specialist agent personas, a Backlog.md task graph, sequential git
 at the points that matter. Clone it, point an agent at `AGENTS.md`, and the project builds itself task by
 task under a process you can audit.
 
-It ships the **process layer** only — nothing here assumes a language or toolchain. You plug in your stack's
-build/lint/test commands in one place (the **quality gate**), and the whole process (pre-commit, CI, the
-backlog Definition of Done) refers back to it.
+It ships the **process layer** plus product-decision skills — nothing here assumes a language or toolchain.
+You plug in your stack's build/lint/test commands in one place (the **quality gate**), and the whole process
+(pre-commit, CI, the backlog Definition of Done) refers back to it.
 
 ## What's in it
 
@@ -21,16 +21,21 @@ CONTRIBUTING.md      Quality gate (you fill in) + branching / PR / versioning co
 CHANGELOG.md         Keep-a-Changelog stub.
 backlog/             Backlog.md, initialized: config.yml (placeholder name + DoD) + empty task dirs.
 .bmad/sdlc-state.yaml  Blank SDLC state tracker — Step 0 fills it in.
-.claude/             Hookify rules that forbid hand-editing backlog/ (CLI-only discipline, enforced).
+.claude/             Hookify backlog-protection rules + Claude-compatible Next Move Theory skills.
+.agents/skills/      Codex-compatible Next Move Theory skills, invoked as $nmt-...
+Next-Move-Theory-Canon/        Canon read by the Next Move Theory skills.
+NextMoveTheory-README.md       Reference README for the installed Next Move Theory skill family.
+.nmt-version         Installed Next Move Theory version marker.
 .github/             CI workflow (placeholder quality gate) + PR template.
 scripts/setup.sh     Installs the agent tooling (Backlog.md + BMAD modules) at pinned versions.
 .gitignore           Transient/local state only — BMAD's install is committed to your project, not ignored.
 ```
 
-The template itself ships **without** the BMAD install. You add it in your project: `scripts/setup.sh` runs
-the standard `npx bmad-method install` at init, creating `_bmad/` + `.claude/skills/bmad-*`, which you then
-**commit** — the `.gitignore` does not exclude them, so the SDLC tooling lives in your repo at a pinned
-version (the same as the source project). Only personal `_bmad/custom/*.user.toml` stays local.
+The template itself ships **without** the BMAD install, but it does include Next Move Theory canon + skills.
+You add BMAD in your project: `scripts/setup.sh` runs the standard `npx bmad-method install` at init,
+creating `_bmad/` + `.claude/skills/bmad-*`, which you then **commit** — the `.gitignore` does not exclude
+them, so the SDLC tooling lives in your repo at a pinned version (the same as the source project). Only
+personal `_bmad/custom/*.user.toml` stays local.
 
 ## Bootstrap a new project
 
@@ -64,12 +69,16 @@ version (the same as the source project). Only personal `_bmad/custom/*.user.tom
 
 ## Dependencies
 
-This template ships the **process layer** only. The agent SDLC tooling is installed at project init by
-`scripts/setup.sh` (the standard `npx bmad-method install`) at pinned versions and **committed to your
-project** (the `.gitignore` does not exclude `_bmad/` or `.claude/skills/`; only personal config stays local):
+This template ships the **process layer** and the Next Move Theory product-decision canon + skills. The BMAD
+agent SDLC tooling is installed at project init by `scripts/setup.sh` (the standard `npx bmad-method
+install`) at pinned versions and **committed to your project** (the `.gitignore` does not exclude `_bmad/`
+or `.claude/skills/`; only personal config stays local):
 
 - **[Backlog.md](https://github.com/MrLesk/Backlog.md)** — the markdown task tracker the whole SDLC runs on
   (`backlog/`). Installed as a global CLI.
+- **[Next Move Theory](https://github.com/zamesin/Next-Move-Theory-Canon-and-Skills)** — preinstalled canon
+  and NMT skills for product strategy, market research, value proposition, PRD, go-to-market, diagnosis, and
+  interview analysis. Claude Code invokes them as `/nmt-...`; Codex invokes them as `$nmt-...`.
 - **BMAD** modules, via `npx bmad-method install`:
   - `bmm` — the core method: the planning + build personas (analyst, pm, architect, sm, dev, tea, …) and
     their workflows.

@@ -35,7 +35,10 @@ A generated project should see the same shape the original template promised:
 - `docs/SDLC.md` and `docs/task-writing-conventions.md`
 - an empty initialized `backlog/`
 - `.bmad/sdlc-state.yaml`
-- `.claude/` backlog-protection hooks
+- `.claude/` backlog-protection hooks and Claude-compatible Next Move Theory skills
+- `.agents/skills/` Codex-compatible Next Move Theory skills
+- `Next-Move-Theory-Canon/`, `.nmt-version`, and `NextMoveTheory-README.md` for the installed NMT skill
+  family
 - `.github/` CI and PR template
 - `scripts/setup.sh` for Backlog.md and BMAD installation
 

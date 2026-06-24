@@ -17,6 +17,11 @@ template/                 Files copied into a generated project root.
   AGENTS.md               Generated-project agent front door.
   CONTRIBUTING.md         Generated-project engineering conventions.
   README.md               Generated-project onboarding.
+  Next-Move-Theory-Canon/ Generated-project product-decision canon used by NMT skills.
+  NextMoveTheory-README.md Reference README from the NMT skills source.
+  .agents/skills/         Generated-project Codex NMT skills.
+  .claude/                Generated-project backlog hooks and Claude NMT skills.
+  .nmt-version            Generated-project NMT installed-version marker.
   docs/                   Generated-project SDLC docs.
   backlog/                Empty generated-project seed backlog.
   scripts/setup.sh        Generated-project BMAD/Backlog bootstrap.
