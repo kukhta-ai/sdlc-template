@@ -1,4 +1,4 @@
-# Advanced Jobs To Be Done (AJTBD) key theses 
+# Advanced Jobs To Be Done (AJTBD) key theses
 
 Built from scratch by Ivan Zamesin, with one goal: an algorithm for any product or business goal. Existing JTBD interpretations were deliberately not adopted — to keep the thinking unframed, and because I believed JTBD is deeper and more powerful than what had been shown before.
 
