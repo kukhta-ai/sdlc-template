@@ -1,0 +1,33 @@
+name: Architecture
+
+on:
+  push:
+    paths:
+      - 'architecture/**'
+      - 'docs/architecture.md'
+      - '.sdlc/processes/architecture-documentation.md'
+      - 'scripts/architecture.sh'
+      - '.github/workflows/architecture.yml'
+  pull_request:
+    paths:
+      - 'architecture/**'
+      - 'docs/architecture.md'
+      - '.sdlc/processes/architecture-documentation.md'
+      - 'scripts/architecture.sh'
+      - '.github/workflows/architecture.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: architecture validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate shell and workspaces
+        run: |
+          bash -n scripts/architecture.sh
+          bash scripts/architecture.sh validate

@@ -1,0 +1,3 @@
+systemContext projectSystem "SystemContext" {
+    include *
+}

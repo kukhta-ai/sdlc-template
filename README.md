@@ -13,6 +13,8 @@ docs/sdlc-persistent-subagent-sequence.html  Maintainer visual reference for the
 backlog/                  Real Backlog.md backlog for sdlc-template work.
 scripts/init-project.sh   Creates a new project from the template payload.
 .serena/project.yml       Shared Serena configuration for this maintainer repository only.
+components/               Optional payload overlays selected during project generation.
+  architecture/           Structurizr, Arc42, and ADR authoring component.
 
 template/                 Files copied into a generated project root.
   AGENTS.md               Generated-project agent front door.
@@ -88,13 +90,19 @@ Useful options:
 
 ```bash
 bash scripts/init-project.sh ../my-project --name "My Project" --install-sdlc-tools
+bash scripts/init-project.sh ../my-project --name "My Project" --with-architecture
 bash scripts/init-project.sh ../my-project --name "My Project" --force
 bash scripts/init-project.sh ../my-project --name "My Project" --no-git
 ```
 
-The init script copies `template/` into the destination root, replaces placeholders, initializes git unless
-`--no-git` is used, checks out `dev`, updates the generated backlog project name when the `backlog` CLI is
-available, and optionally runs the generated project's `scripts/setup.sh`.
+The init script copies `template/` into the destination root and, when selected, layers an optional component
+from `components/` on top. It then replaces placeholders, initializes git unless `--no-git` is used, checks
+out `dev`, updates the generated backlog project name when the `backlog` CLI is available, and optionally
+runs the generated project's `scripts/setup.sh`. For source safety, the destination cannot be the maintainer
+repository or a path inside it, even with `--force`.
+
+`--with-architecture` includes and immediately activates the architecture-as-code process, workspace, and
+validation workflow. Without that option, no architecture-specific files or Docker requirement are copied.
 
 ## Maintain The Template
 
@@ -112,6 +120,7 @@ bash -n scripts/init-project.sh
 bash -n template/scripts/setup.sh
 bash -n template/scripts/codegraph-telemetry-off.sh
 bash -n template/scripts/serena-telemetry-off.sh
+bash -n components/architecture/overlay/scripts/architecture.sh
 bash tests/code-intelligence-tooling.sh
 git diff --check
 ```
