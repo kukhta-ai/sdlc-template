@@ -1,0 +1,6 @@
+ifndef::imagesdir[:imagesdir: ../images]
+
+[[section-technical-risks]]
+== Risks and Technical Debts
+
+TODO: Record architecture risks and technical debt that could materially affect delivery or operation.

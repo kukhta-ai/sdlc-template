@@ -4,6 +4,9 @@ The autonomous, BMAD-based development process for this repo, as a sequence diag
 **authoritative, complete picture** of the flow `AGENTS.md` encodes; read them together. Text/Mermaid so it
 lives in version control and an agent can parse it directly (no HTML/browser needed).
 
+This diagram covers the **Full SDLC development** process. It is not the default for questions, setup help,
+Git work, or focused edits; `AGENTS.md` routes those through focused work.
+
 Personas are persistent BMAD subagents — **spawned once, resumed** for each later call in their lifetime
 (`SPAWN` vs `RESUME` below). Development is **sequential**: one worker active at a time, a single working
 tree, story sub-branches via `checkout -b` (not worktrees). `[GATE]` marks a human approval point — stop
@@ -27,6 +30,8 @@ sequenceDiagram
     participant T as tea
     participant SM as sm
     participant W as worker (dev)
+    participant CI as Code intelligence
+    participant X as Installed process extensions
     participant R as retro
     participant I as investigator
     participant S as System
@@ -51,6 +56,10 @@ sequenceDiagram
     M->>G: checkout -b feature/<epic> from dev
     M->>AR: SPAWN create-architecture
     AR-->>M: architecture.md (decisions)
+    opt compatible Phase 3 extension installed
+        M->>X: run registered solutioning extension
+        X-->>M: owned artifacts + focused checks
+    end
     M->>AR: RESUME create-epics-and-stories
     AR-->>M: epic files + draft stories (seed the backlog)
     M->>T: SPAWN testarch-test-design (system)
@@ -78,7 +87,30 @@ sequenceDiagram
     M->>S: install + configure automator
 
     Note over M,W: Story N (one backlog task) — repeat per task
-    M->>G: checkout -b feature/<epic>-task-<id>
+    M->>S: backlog sequence list; read task <id> without claiming
+    S-->>M: task AC + DoD; status remains To Do
+    M->>M: story size preflight (XS/S/M/L/XL)
+    M->>S: record story_preflight; active_story remains null
+    alt XL without explicit human approval
+        break pause Full SDLC; task remains unclaimed
+            M->>S: record split-required + pending gate
+            U-->>M: [GATE] split task or explicitly accept continuation
+        end
+    else accepted size or human-approved XL
+        M->>S: claim task; set active_story + review_cycle
+        M->>G: checkout -b feature/<epic>-task-<id>
+        opt read-only code intelligence required
+            M->>CI: CodeGraph structural discovery via telemetry-off wrapper
+            CI-->>M: entry points + call paths + blast radius
+            M->>CI: Serena symbol/reference discovery via telemetry-off wrapper
+            CI-->>M: symbol map + references
+            M->>S: record tools, indexes, findings, fallbacks
+        end
+        opt compatible story-shaping extension trigger matches
+            M->>X: run registered extension with task, preflight, and discovery note
+            X-->>M: focused design context + owned artifacts/checks
+        end
+    end
     M->>W: SPAWN create-story (worker)
     W-->>M: story file confirmed
     M->>W: RESUME dev-story
@@ -151,6 +183,8 @@ sequenceDiagram
 | tea + the `testarch-*` workflows | **TEA** module (`--modules tea`) | test design, framework, ci, trace, nfr, atdd, automate, test-review |
 | worker / automator loop (`story-automator`, `story-automator-review`) | **automator** (`--modules automator`) | the per-story build→review automation in Phase 5 |
 | worker (dev), investigator, retro | roles spun from BMM `dev`/`qa` + the `retrospective` workflow | implement stories, debug at the gate, write the epic retro |
+| CodeGraph + Serena | installed by `scripts/setup.sh` with telemetry disabled | optional read-only discovery for impact, call paths, and symbol references |
+| `.sdlc/processes/*.md` | locally installed extensions, if present | active process registrations with declared state, compatibility, checks, and exit conditions |
 
 See `AGENTS.md` for how to install these, initialize the persistent specialists, and track SDLC state, and
 the `README.md` for the bootstrap.

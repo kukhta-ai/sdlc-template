@@ -12,6 +12,9 @@ docs/template-design.md   Product design record for the template itself.
 docs/sdlc-persistent-subagent-sequence.html  Maintainer visual reference for the SDLC flow.
 backlog/                  Real Backlog.md backlog for sdlc-template work.
 scripts/init-project.sh   Creates a new project from the template payload.
+.serena/project.yml       Shared Serena configuration for this maintainer repository only.
+components/               Optional payload overlays selected during project generation.
+  architecture/           Structurizr, Arc42, and ADR authoring component.
 
 template/                 Files copied into a generated project root.
   AGENTS.md               Generated-project agent front door.
@@ -22,9 +25,12 @@ template/                 Files copied into a generated project root.
   .agents/skills/         Generated-project Codex NMT skills.
   .claude/                Generated-project backlog hooks and Claude NMT skills.
   .nmt-version            Generated-project NMT installed-version marker.
-  docs/                   Generated-project SDLC docs.
+  docs/                   Generated-project SDLC, code-intelligence, and task-writing docs.
   backlog/                Empty generated-project seed backlog.
-  scripts/setup.sh        Generated-project BMAD/Backlog bootstrap.
+  scripts/setup.sh        Generated-project BMAD/Backlog/CodeGraph/Serena bootstrap.
+  scripts/*-telemetry-off.sh  Generated-project safe code-intelligence launchers.
+
+tests/code-intelligence-tooling.sh  Controlled setup/wrapper contract checks.
 ```
 
 The root and payload intentionally have different meanings. When an agent is working in this repository, it
@@ -84,13 +90,19 @@ Useful options:
 
 ```bash
 bash scripts/init-project.sh ../my-project --name "My Project" --install-sdlc-tools
+bash scripts/init-project.sh ../my-project --name "My Project" --with-architecture
 bash scripts/init-project.sh ../my-project --name "My Project" --force
 bash scripts/init-project.sh ../my-project --name "My Project" --no-git
 ```
 
-The init script copies `template/` into the destination root, replaces placeholders, initializes git unless
-`--no-git` is used, checks out `dev`, updates the generated backlog project name when the `backlog` CLI is
-available, and optionally runs the generated project's `scripts/setup.sh`.
+The init script copies `template/` into the destination root and, when selected, layers an optional component
+from `components/` on top. It then replaces placeholders, initializes git unless `--no-git` is used, checks
+out `dev`, updates the generated backlog project name when the `backlog` CLI is available, and optionally
+runs the generated project's `scripts/setup.sh`. For source safety, the destination cannot be the maintainer
+repository or a path inside it, even with `--force`.
+
+`--with-architecture` includes and immediately activates the architecture-as-code process, workspace, and
+validation workflow. Without that option, no architecture-specific files or Docker requirement are copied.
 
 ## Maintain The Template
 
@@ -106,6 +118,10 @@ Run the maintainer quality gate before review:
 ```bash
 bash -n scripts/init-project.sh
 bash -n template/scripts/setup.sh
+bash -n template/scripts/codegraph-telemetry-off.sh
+bash -n template/scripts/serena-telemetry-off.sh
+bash -n components/architecture/overlay/scripts/architecture.sh
+bash tests/code-intelligence-tooling.sh
 git diff --check
 ```
 
