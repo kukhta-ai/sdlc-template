@@ -1,0 +1,22 @@
+ifndef::imagesdir[:imagesdir: ../images]
+
+[[section-context-and-scope]]
+== Context and Scope
+
+
+
+
+
+
+=== Business Context
+
+image::embed:SystemContext[]
+
+TODO: Explain the important domain interfaces and exchanged information.
+
+=== Technical Context
+
+TODO: Define a container view with the stable key `Containers`, then embed it here with
+`image::embed:Containers[]`.
+
+TODO: Explain the important technical channels, protocols, and interface constraints.

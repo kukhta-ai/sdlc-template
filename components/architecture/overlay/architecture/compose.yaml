@@ -1,0 +1,34 @@
+name: ${COMPOSE_PROJECT_NAME:-__PROJECT_SLUG__-architecture}
+
+x-structurizr-service: &structurizr-service
+  image: structurizr/structurizr:2026.06.28@sha256:251905a1a2d73195e84b784966babc71b329223fdbb25368261a9e3ba39041c4
+  command: ["local"]
+  user: "${STRUCTURIZR_USER:-1000:1000}"
+  environment:
+    STRUCTURIZR_NETWORK_URLS_ALLOWED: ""
+  read_only: true
+  tmpfs:
+    - /tmp:rw,noexec,nosuid,size=256m
+  cap_drop:
+    - ALL
+  security_opt:
+    - no-new-privileges:true
+
+services:
+  target-architecture:
+    <<: *structurizr-service
+    volumes:
+      - ./base:/usr/local/base:ro
+      - ./baseline:/usr/local/baseline:ro
+      - ./target:/usr/local/structurizr
+    ports:
+      - "127.0.0.1:${STRUCTURIZR_TARGET_PORT:-8081}:8080"
+
+  baseline-architecture:
+    <<: *structurizr-service
+    profiles: ["optional"]
+    volumes:
+      - ./base:/usr/local/base:ro
+      - ./baseline:/usr/local/structurizr
+    ports:
+      - "127.0.0.1:${STRUCTURIZR_BASELINE_PORT:-8082}:8080"

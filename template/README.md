@@ -39,8 +39,9 @@ The template itself ships **without** the BMAD install, but it does include Next
 `.claude/skills/bmad-*` plus Serena's `.serena/project.yml`; CodeGraph's index, Serena caches/logs, and
 personal configuration stay local.
 
-An installed extension may register a process under `.sdlc/processes/`. If that directory is absent, no
-process extension is active and agents must not infer or fetch one.
+Project generation may also install optional components. A selected component can register an active process
+under `.sdlc/processes/` and add its own documentation, scripts, and focused workflow. If that directory is
+absent, no process extension is active and agents must not infer or fetch one.
 
 ## Bootstrap a new project
 

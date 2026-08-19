@@ -1,0 +1,3 @@
+# Structurizr Local writes browser layout and workspace state beside workspace.dsl.
+**/.structurizr/
+**/workspace.json

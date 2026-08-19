@@ -16,6 +16,7 @@ from instructions for changing the template product.
 ```text
 root repository          Maintains and evolves the template product.
 template/                Payload copied into a new generated project root.
+components/              Optional payload overlays copied only when selected at generation.
 root backlog/            Real maintenance backlog for sdlc-template tasks.
 template/backlog/        Empty seed backlog fixture for generated projects.
 scripts/init-project.sh  Maintainer script that creates a project from template/.
@@ -69,11 +70,26 @@ MCP registration is disabled by default. Explicit registrations have project-spe
 absolute wrappers from the generated project. Missing tools or indexes fall back to repository-native
 read-only discovery, with the fallback recorded in the seeded SDLC state fields.
 
+## Optional Component Contract
+
+Optional components live outside `template/` so base generation does not receive dormant component files.
+The initializer copies a selected component's `overlay/` after the base payload, then applies the same
+project placeholders to both sources. Component overlays must not overwrite base files; shared integration
+uses provider-neutral extension seams such as `.sdlc/processes/*.md`.
+
+The architecture component is selected with `--with-architecture`. If omitted, the generated project has no
+architecture workspace, process registration, wrapper, workflow, or Docker dependency. If selected, those
+surfaces are present and active immediately; there is no second activation flag. Runtime services still
+start only when the user runs the documented command.
+
 ## Initializer Contract
 
-`scripts/init-project.sh` copies the payload to a destination directory, replaces project placeholders,
-initializes git unless disabled, checks out `dev`, updates the generated backlog project name when the
-Backlog.md CLI is available, and can optionally run the generated-project setup script.
+`scripts/init-project.sh` copies the base payload and any explicitly selected component overlays to a
+destination directory, replaces project placeholders in those copied sources, initializes git unless
+disabled, checks out `dev`, updates the generated backlog project name when the Backlog.md CLI is available,
+and can optionally run the generated-project setup script. It resolves both its source and destination
+physically and rejects the maintainer repository and all of its descendants before copying, including when
+`--force` is set.
 
 No separate `verify-template` script is part of the design at this point. Structural checks can live inline
 in CI and in the maintainer quality gate.

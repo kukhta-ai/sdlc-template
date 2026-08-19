@@ -1,0 +1,7 @@
+ifndef::imagesdir[:imagesdir: ../images]
+
+[[section-solution-strategy]]
+== Solution Strategy
+
+TODO: Summarize the few fundamental decisions that shape __PROJECT_NAME__. Link to ADRs for detailed
+reasoning rather than duplicating it here.

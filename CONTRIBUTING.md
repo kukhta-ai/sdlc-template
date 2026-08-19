@@ -12,6 +12,7 @@ bash -n scripts/init-project.sh
 bash -n template/scripts/setup.sh
 bash -n template/scripts/codegraph-telemetry-off.sh
 bash -n template/scripts/serena-telemetry-off.sh
+bash -n components/architecture/overlay/scripts/architecture.sh
 bash tests/code-intelligence-tooling.sh
 git diff --check
 ```
@@ -22,6 +23,8 @@ Add focused checks for the files you changed. Examples:
 - For GitHub Actions changes, inspect the workflow YAML and keep the inline structural checks explicit.
 - For setup or code-intelligence changes, use controlled fake commands to prove telemetry overrides,
   installation opt-outs, registration defaults, and validation failures without network access.
+- For optional components, generate both base and selected variants and prove that their inventories differ
+  only by the selected overlay. Run the component's own validation from the selected output.
 - For backlog changes, use `backlog task list --plain` and `backlog sequence list` to confirm the active root backlog is readable.
 
 Do not add a separate `verify-template` script unless the project explicitly decides to introduce one later.
@@ -29,7 +32,8 @@ Do not add a separate `verify-template` script unless the project explicitly dec
 ## Root Versus Template Payload
 
 - Root `AGENTS.md`, `README.md`, `CONTRIBUTING.md`, `docs/`, `scripts/`, `.serena/`, and `backlog/` are for maintaining this repository.
-- `template/` contains files copied into new projects.
+- `template/` contains the base files copied into every new project.
+- `components/*/overlay/` contains optional files copied only when that component is selected.
 - `template/AGENTS.md` is product content, not the active instruction file for this repository.
 - `template/backlog/` is a seed fixture, not the active work tracker.
 
