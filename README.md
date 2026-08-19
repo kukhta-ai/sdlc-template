@@ -12,6 +12,7 @@ docs/template-design.md   Product design record for the template itself.
 docs/sdlc-persistent-subagent-sequence.html  Maintainer visual reference for the SDLC flow.
 backlog/                  Real Backlog.md backlog for sdlc-template work.
 scripts/init-project.sh   Creates a new project from the template payload.
+.serena/project.yml       Shared Serena configuration for this maintainer repository only.
 
 template/                 Files copied into a generated project root.
   AGENTS.md               Generated-project agent front door.
@@ -22,9 +23,12 @@ template/                 Files copied into a generated project root.
   .agents/skills/         Generated-project Codex NMT skills.
   .claude/                Generated-project backlog hooks and Claude NMT skills.
   .nmt-version            Generated-project NMT installed-version marker.
-  docs/                   Generated-project SDLC docs.
+  docs/                   Generated-project SDLC, code-intelligence, and task-writing docs.
   backlog/                Empty generated-project seed backlog.
-  scripts/setup.sh        Generated-project BMAD/Backlog bootstrap.
+  scripts/setup.sh        Generated-project BMAD/Backlog/CodeGraph/Serena bootstrap.
+  scripts/*-telemetry-off.sh  Generated-project safe code-intelligence launchers.
+
+tests/code-intelligence-tooling.sh  Controlled setup/wrapper contract checks.
 ```
 
 The root and payload intentionally have different meanings. When an agent is working in this repository, it
@@ -106,6 +110,9 @@ Run the maintainer quality gate before review:
 ```bash
 bash -n scripts/init-project.sh
 bash -n template/scripts/setup.sh
+bash -n template/scripts/codegraph-telemetry-off.sh
+bash -n template/scripts/serena-telemetry-off.sh
+bash tests/code-intelligence-tooling.sh
 git diff --check
 ```
 

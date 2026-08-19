@@ -22,14 +22,27 @@ jobs:
         run: |
           bash -n scripts/init-project.sh
           bash -n template/scripts/setup.sh
+          bash -n template/scripts/codegraph-telemetry-off.sh
+          bash -n template/scripts/serena-telemetry-off.sh
+          bash -n tests/code-intelligence-tooling.sh
+          bash -n tests/fixtures/fake-cli.sh
+
+      - name: Code-intelligence safety contract
+        run: bash tests/code-intelligence-tooling.sh
 
       - name: Root and payload boundaries
         run: |
           test -f AGENTS.md
           test -f template/AGENTS.md
           test -f template/scripts/setup.sh
+          test -f template/scripts/codegraph-telemetry-off.sh
+          test -f template/scripts/serena-telemetry-off.sh
           test -f template/docs/SDLC.md
+          test -f template/docs/code-intelligence-tools.md
           test -f template/docs/task-writing-conventions.md
+          test -f .serena/project.yml
+          test -f .serena/.gitignore
+          test -f tests/code-intelligence-tooling.sh
           test -f docs/sdlc-persistent-subagent-sequence.html
           test -d backlog
           test -d template/backlog
@@ -38,4 +51,6 @@ jobs:
           test ! -f scripts/setup.sh
 
       - name: Whitespace check
-        run: git diff --check HEAD
+        run: |
+          empty_tree="$(git hash-object -t tree /dev/null)"
+          git diff --check "$empty_tree" HEAD

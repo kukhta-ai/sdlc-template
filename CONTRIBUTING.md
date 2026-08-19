@@ -10,6 +10,9 @@ The current maintainer gate is intentionally small and stack-agnostic:
 ```bash
 bash -n scripts/init-project.sh
 bash -n template/scripts/setup.sh
+bash -n template/scripts/codegraph-telemetry-off.sh
+bash -n template/scripts/serena-telemetry-off.sh
+bash tests/code-intelligence-tooling.sh
 git diff --check
 ```
 
@@ -17,13 +20,15 @@ Add focused checks for the files you changed. Examples:
 
 - For the HTML SDLC diagram, extract or execute the inline JavaScript enough to catch syntax/runtime errors.
 - For GitHub Actions changes, inspect the workflow YAML and keep the inline structural checks explicit.
+- For setup or code-intelligence changes, use controlled fake commands to prove telemetry overrides,
+  installation opt-outs, registration defaults, and validation failures without network access.
 - For backlog changes, use `backlog task list --plain` and `backlog sequence list` to confirm the active root backlog is readable.
 
 Do not add a separate `verify-template` script unless the project explicitly decides to introduce one later.
 
 ## Root Versus Template Payload
 
-- Root `AGENTS.md`, `README.md`, `CONTRIBUTING.md`, `docs/`, `scripts/`, and `backlog/` are for maintaining this repository.
+- Root `AGENTS.md`, `README.md`, `CONTRIBUTING.md`, `docs/`, `scripts/`, `.serena/`, and `backlog/` are for maintaining this repository.
 - `template/` contains files copied into new projects.
 - `template/AGENTS.md` is product content, not the active instruction file for this repository.
 - `template/backlog/` is a seed fixture, not the active work tracker.

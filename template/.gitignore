@@ -10,6 +10,12 @@
 # Backlog.md transient locks (task state itself IS committed under backlog/)
 backlog/.locks/
 
+# Code-intelligence indexes and local overrides. Serena's project.yml is intentionally versioned.
+.codegraph/
+.serena/cache/
+.serena/logs/
+.serena/project.local.yml
+
 # Local orchestration / agent state (not part of the project)
 .omc/
 .remember/

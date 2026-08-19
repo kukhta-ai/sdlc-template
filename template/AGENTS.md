@@ -1,22 +1,108 @@
-# AGENTS.md — agent front door (development)
+# AGENTS.md — agent front door
 
-> **This file governs how an agent develops *this project*.** You are an engineering agent building the
-> software specified by this repo's **design set** (the committed docs under `docs/`). Work is tracked as a
-> [Backlog.md](https://github.com/MrLesk/Backlog.md) backlog in `backlog/`. You take tasks from that backlog
-> and implement them under the process below — an autonomous, **BMAD-based** SDLC with persistent specialist
-> subagents, sequential git branching, and a tracked state machine.
+> **This file is a process router for agent work in this project.** It tells an agent which operating
+> process to use for the current request. The full BMAD SDLC is one process in the catalog; it is not the
+> default for every interaction.
+>
+> Start with the lightweight fallback: understand the request, read the smallest useful context, do the
+> focused work, and run checks that match the files touched. Select a heavier process only when its trigger
+> matches or the user explicitly asks for it.
 >
 > This template is **stack-agnostic**: nothing here assumes a language or toolchain. Wherever a concrete
-> command is needed (build, lint, test) the process refers to the project's **quality gate** — defined once
+> command is needed (build, lint, test), use the project's **quality gate** — defined once
 > in `CONTRIBUTING.md` and wired identically into pre-commit, CI, and the backlog Definition of Done.
 
 ---
 
-## Before anything else — read the design set, in order
+## Process router — choose before acting
 
-Your first action in this repo, before installing tooling, touching the backlog, or writing a line, is to
-**read the project's design set fully and sequentially** — every document under `docs/`, in order. This is
-mandatory, not optional skimming:
+Classify the request before acting. If the request does not clearly match a registered process, use the
+fallback process.
+
+Before classification, read every Markdown file under `.sdlc/processes/` if that directory exists. Each
+file is an installed, active process extension and must use the same contract fields as the built-in
+catalog. A missing directory means no extensions are installed; do not infer or fetch one.
+
+Selection rules:
+
+- **Explicit user choice wins.** If the user names a process, use it unless doing so would be unsafe or
+  contradictory.
+- **Use the narrowest matching process.** Do not escalate to a heavier process when a lighter one satisfies
+  the request.
+- **One active process by default.** Combine processes only when the catalog says they are compatible or the
+  user explicitly asks to combine them.
+- **State-changing processes must declare state.** Before touching backlog state, BMAD state, branches, or
+  release state, identify which process owns that state.
+- **No process by implication.** Product methodology rules, repository presence, or this file existing do not
+  by themselves trigger the full SDLC.
+
+## Process catalog
+
+Every registered process, including an installed `.sdlc/processes/*.md` extension, must keep the same
+contract fields: **Trigger**, **May touch**, **Required context**, **Gates/checks**, **Exit**, and
+**Compatibility**.
+
+### Fallback focused work
+
+- **Trigger:** Any request that does not clearly match another process: questions, repo status, Git/GitHub
+  housekeeping, troubleshooting, setup help, explanation, research, or focused non-backlog edits.
+- **May touch:** Only files or commands needed for the request. No backlog status, BMAD state, or SDLC
+  branch state.
+- **Required context:** Smallest useful context for the request. For code-focused questions or focused
+  edits, CodeGraph and Serena may be used as read-only discovery tools with telemetry disabled; their use
+  does not start Full SDLC development.
+- **Gates/checks:** Run checks appropriate to touched files. Ask before destructive or irreversible actions.
+- **Exit:** User request is answered or the focused change is complete.
+- **Compatibility:** Can be combined with another process only as a preliminary investigation step.
+
+### Backlog planning
+
+- **Trigger:** The user asks to create, refine, sequence, inspect, or discuss Backlog.md tasks without
+  implementing them.
+- **May touch:** Backlog.md task metadata through the `backlog` CLI only.
+- **Required context:** `docs/task-writing-conventions.md` before creating tasks or changing acceptance
+  criteria.
+- **Gates/checks:** Do not mark tasks `In Progress`, tick AC/DoD, or build code unless the user switches
+  processes.
+- **Exit:** Backlog question is answered or task structure is updated.
+- **Compatibility:** Can precede Full SDLC development, but it does not start development by itself.
+
+### Full SDLC development
+
+- **Trigger:** The user asks to implement, start, continue, or complete a specific Backlog.md task, or
+  explicitly asks for the full SDLC.
+- **May touch:** Backlog task status, `.bmad/sdlc-state.yaml`, SDLC branches, implementation files, tests,
+  and PR state.
+- **Required context:** Full design-set preload and all SDLC instructions below.
+- **Gates/checks:** Follow BMAD workflow rules, branch topology, per-story loop, quality gate, and user
+  gates. Use story sizing and code-intelligence discovery when the story's scope calls for them.
+- **Exit:** Task is Done and integrated into the epic branch, or a documented user/blocker gate is reached.
+- **Compatibility:** Can follow Backlog planning. Do not combine with unrelated processes unless the user
+  explicitly asks.
+
+## Adding a process
+
+When adding another process, keep it independent from the full SDLC unless it truly implements a Backlog.md
+development task. Use this shape:
+
+1. Add a process entry with a clear trigger and explicit state boundary. A generated-project extension may
+   instead register the complete entry in `.sdlc/processes/<name>.md`; its presence makes the process active.
+2. Add a section named `## <Process name> process`, either here or in that registered extension file.
+3. State when it starts, what it may read or mutate, what checks it runs, when it must stop for a human, and
+   how it exits.
+4. Say whether it can combine with other processes. If not stated, assume it cannot.
+5. Keep process-specific tools, personas, branches, and state files inside that process section.
+
+## Full SDLC development process starts here
+
+Everything from this section through "When stuck" applies only in the **Full SDLC development process**.
+Outside that process, use fallback focused work unless another catalog entry matches the request.
+
+## Before development — read the design set, in order
+
+Your first action in the Full SDLC development process, before installing tooling, touching the backlog, or
+writing a line, is to **read the project's design set fully and sequentially** — every document under
+`docs/`, in order. This is mandatory, not optional skimming:
 
 - Read each document in full before opening the next; later docs build on earlier ones.
 - Do not skip, sample, or rely on summaries — the design set is the specification you conform to.
@@ -146,15 +232,24 @@ them) — then keep one long-lived
 ("persistent") session per specialist, spawned once and **resumed** for each later call (the diagram's
 SPAWN vs RESUME distinction).
 
-1. **Run the bootstrap script** from the repo root (installs the Backlog.md CLI and the BMAD modules this
-   SDLC uses — `bmm`, `tea`, `automator` — at pinned versions):
+1. **Run the bootstrap script** from the repo root (installs the Backlog.md CLI, the BMAD modules this SDLC
+   uses — `bmm`, `tea`, `automator` — and CodeGraph/Serena at pinned versions):
    ```
    bash scripts/setup.sh
    ```
    Or do it by hand:
    ```
+   export CODEGRAPH_TELEMETRY=0
+   export DO_NOT_TRACK=1
+   export SERENA_USAGE_REPORTING=false
    npx bmad-method install --modules bmm,tea
    npx bmad-method install --modules automator
+   npm install -g @colbymchenry/codegraph@1.1.2
+   scripts/codegraph-telemetry-off.sh telemetry off
+   scripts/codegraph-telemetry-off.sh init .
+   uv tool install -p 3.13 serena-agent==1.5.3
+   scripts/serena-telemetry-off.sh init
+   scripts/serena-telemetry-off.sh project create --index --name "$(basename "$PWD")" .
    ```
    - **BMM** — the core method: agents `analyst, pm, ux-designer, architect, sm, dev, tea, tech-writer` and
      the workflows `create-story, dev-story, qa-generate-e2e-tests, retrospective, sprint-planning,
@@ -162,6 +257,13 @@ SPAWN vs RESUME distinction).
    - **TEA** (test architecture) — agent `tea` and the `testarch-*` workflows: `test-design, framework, ci,
      trace, nfr, atdd, automate, test-review`.
    - **automator** — the autonomous build loop (`story-automator` + `story-automator-review`) for Phase 5.
+   - **CodeGraph** — structural code graph and `codegraph_explore` for story impact and call-path discovery.
+     Setup persists telemetry off and every project launch path forces `CODEGRAPH_TELEMETRY=0` plus
+     `DO_NOT_TRACK=1`.
+   - **Serena** — semantic code toolkit for project activation, symbol overview, and reference discovery.
+     Every project launch path forces `SERENA_USAGE_REPORTING=false` plus `DO_NOT_TRACK=1`.
+   - MCP client registration is deliberately disabled by default. If enabled explicitly, setup gives each
+     registration a project-specific name and points it at this project's telemetry-off wrapper.
 2. **If any package fails to resolve or its commands are unknown, STOP and read the module source before
    proceeding** — do not invent agent names or workflow steps. Clone `bmad-code-org/BMAD-METHOD` (and the
    `tea` / `automator` module repos) and read each module's agent/workflow definitions to confirm the exact
@@ -198,6 +300,72 @@ reconcile, and continue from exactly that point. Never restart completed work; n
 
 ---
 
+## Story preflight and code-intelligence discovery
+
+These are sub-processes inside Full SDLC development, not top-level processes. Story preflight happens
+before a task is claimed. Code-intelligence discovery, when selected, happens after the task is claimed and
+its story branch exists, but before `create-story`.
+
+### Story size preflight
+
+Run this for every dependency-ready backlog task. Classify scope by blast radius and unknowns:
+
+| Size | Typical shape | Code-intelligence route |
+|---|---|---|
+| **XS** | One obvious local edit with no public contract change. | Skip unless the user explicitly requests it. |
+| **S** | Small isolated behavior in one narrow module or UI/API path. | Run only for an unfamiliar boundary, dependency, or public contract. |
+| **M** | Multiple files, a module boundary, data-shape change, or integration point. | Run before story creation. |
+| **L** | Cross-module behavior, public contract impact, concurrency/state complexity, or hard-to-reverse structure. | Run before story creation. |
+| **XL** | Several independently shippable outcomes, broad redesign, unclear acceptance boundaries, or work that would span multiple L stories. | Stop unclaimed and split through Backlog planning unless a human explicitly accepts continuation; discovery is required if continued. |
+
+Preflight steps:
+
+1. Read the candidate with `backlog task <id> --plain` without changing its status. Read the relevant design
+   docs and enough of the likely code area to estimate scope using repository-native read-only tools.
+2. Assign `XS`, `S`, `M`, `L`, or `XL`; if unsure between two sizes, choose the larger. Record the task,
+   size, reason, and whether code intelligence is required under `story_preflight` in
+   `.bmad/sdlc-state.yaml`. Keep `active_story: null` during preflight.
+3. If the result is `XL`, do not mark the task `In Progress` and do not create a branch. Stop for Backlog
+   planning or a human scope decision. Record `xl_disposition: split-required` and the pending gate. If
+   planning splits or replaces the task, leave the original unclaimed and clear its `story_preflight` and
+   pending gate before selecting a replacement.
+4. Continue an `XL` task only after the human explicitly accepts the risk. Record
+   `xl_disposition: human-approved`, remove the corresponding pending gate, then claim it and create its story
+   branch exactly like another accepted size.
+5. For accepted sizes, claim the task, set `active_story`, and create the story branch before running code
+   intelligence or any story workflow.
+
+### Code-intelligence discovery
+
+Run this read-only discovery for `M`, `L`, and human-approved `XL` stories; for `S` stories that touch an
+unfamiliar boundary, dependency, or public contract; or when the user explicitly requests call-path,
+impact, or symbol-reference analysis. Skip it for an obvious `XS`, prose-only docs, and housekeeping.
+
+Never run CodeGraph or Serena from this project without the telemetry-off wrappers:
+
+```bash
+scripts/codegraph-telemetry-off.sh status
+scripts/serena-telemetry-off.sh project health-check .
+```
+
+The wrappers force `CODEGRAPH_TELEMETRY=0`, `DO_NOT_TRACK=1`, and
+`SERENA_USAGE_REPORTING=false`; inherited values cannot re-enable reporting.
+
+Discovery steps:
+
+1. Confirm the tools and project indexes are available. Do not install, download, register clients, create
+   indexes, or modify source as part of discovery. If a tool or index is unavailable, use `rg` and other
+   repository-native read-only tools and record the fallback.
+2. Use CodeGraph for structural questions: entry points, flows, call paths, relevant source, and blast
+   radius. Use Serena for symbol overview and reference lookup. Discovery must not use symbol-editing or
+   refactoring operations.
+3. Produce a short note containing entry points, affected files/symbols, blast radius, likely affected
+   tests, and confidence gaps. Feed the note into `create-story` and `dev-story`.
+4. Record status, tools used, wrapper-enforced telemetry values, indexes used, findings, and fallbacks under
+   `code_intelligence` in `.bmad/sdlc-state.yaml` and in the task notes.
+
+---
+
 ## Branch topology  (sequential — one story in flight, single working tree, no worktrees)
 
 ```
@@ -215,6 +383,10 @@ main → dev → feature/<epic> → feature/<epic>-task-<id>
 ---
 
 ## The full SDLC schema — phases, personas, workflows, git, gates
+
+Use this schema only in the **Full SDLC development process** for Backlog.md development tasks. Do not apply
+these phases to ordinary requests, ad hoc repository help, lightweight documentation edits, or investigations
+that are not implementing a backlog task.
 
 The complete sequence — every persona call, workflow, git operation, and gate — is the diagram in
 **`docs/SDLC.md`** (an agent-readable Mermaid sequence). This section is the prose form; read them together.
@@ -234,10 +406,14 @@ at every phase boundary.
 **Phase 3 — Solutioning + test architecture** · branch `feature/<epic>` (off `dev`) · personas `architect`,
 `tea`
 - `git checkout -b feature/<epic>` from `dev`.
-- `architect`: `create-architecture`, then `create-epics-and-stories` (seeds the backlog), then
-  `check-implementation-readiness`.
+- `architect`: run `create-architecture` to produce the normal BMAD solution design.
+- Run every installed process extension whose **Compatibility** explicitly includes Full SDLC Phase 3.
+  Run it after `create-architecture`; the extension owns its artifacts and focused checks while Full SDLC
+  retains ownership of the branch, backlog, BMAD state, and solutioning user gate.
+- `architect`: run `create-epics-and-stories` (seeds the backlog).
 - `tea`: `testarch-test-design`, `testarch-framework`, `testarch-ci` — reconciled with this project's
   **quality gate** (the build/lint/test commands declared in `CONTRIBUTING.md`).
+- `architect`: run `check-implementation-readiness` against the complete solution and test design.
 - Commit architecture + epics + test-architecture + CI on `feature/<epic>`.
 - **(GATE)** human approves solutioning.
 
@@ -251,6 +427,8 @@ at every phase boundary.
 **Phase 5 — Autonomous build** · branch `feature/<epic>` → per-story sub-branches · personas `worker`
 (dev), `tea`, `retro`
 - Configure the **automator** (Step 0). Then, **per backlog task**, run the per-story loop below.
+- Use CodeGraph and Serena only through the read-only discovery sub-process, and only when story size or
+  scope calls for it. Their presence does not make ordinary work a Full SDLC task.
 - After the epic's tasks are Done, spawn `retro` to run `retrospective`; commit the retrospective on
   `feature/<epic>`.
 
@@ -278,29 +456,42 @@ at every phase boundary.
 Pick the **next task whose dependencies are all Done** (`backlog sequence list`; ids are in dependency
 order). Then:
 
-1. **Claim & read.** `backlog task edit <id> -s "In Progress"`; `backlog task <id> --plain`. Set
-   `active_story` and `review_cycle: 0` in the state file. The acceptance criteria are the contract — they
-   say *what* must be true, not *how* (standard: `docs/task-writing-conventions.md`); you pick the how.
-2. **Branch.** `git checkout feature/<epic> && git checkout -b feature/<epic>-task-<id>`. Update `branch`.
-3. **create-story (worker).** The worker **invokes the `create-story` skill** (not a hand-written spec —
+1. **Read & preflight while unclaimed.** Run `backlog task <id> --plain` without changing status, then run
+   story size preflight (`XS` / `S` / `M` / `L` / `XL`). The acceptance criteria are the contract — they
+   say *what* must be true, not *how* (standard: `docs/task-writing-conventions.md`). Record
+   `story_preflight` while `active_story` remains null.
+2. **Dispose XL before claim.** If the story is `XL`, stop for Backlog planning or a human scope decision.
+   Do not claim it and do not create a branch. Continue only after it is split or the human explicitly
+   accepts the risk, that disposition is recorded, and the corresponding pending gate is cleared.
+3. **Claim & branch.** For an accepted size, `backlog task edit <id> -s "In Progress"`; set `active_story`
+   and `review_cycle: 0`; then `git checkout feature/<epic> && git checkout -b
+   feature/<epic>-task-<id>`. Update `branch`.
+4. **Read-only code discovery when selected.** Use the telemetry-off CodeGraph and Serena wrappers for the
+   routing defined above. Record the short discovery note and any fallback; do not modify source during
+   this sub-process.
+5. **Run matching story-shaping extensions.** Re-evaluate installed process extensions against the recorded
+   task and preflight. After discovery and before story creation, run each extension whose **Trigger** matches
+   and whose **Compatibility** explicitly includes Full SDLC story shaping. Feed its output into the story;
+   Full SDLC retains ownership of task, BMAD, branch, and review state.
+6. **create-story (worker).** The worker **invokes the `create-story` skill** (not a hand-written spec —
    Rule 3) to turn the task into a concrete work spec grounded in the docs.
-4. **dev-story (worker).** The worker **invokes `dev-story`** to implement the task with its tests together —
+7. **dev-story (worker).** The worker **invokes `dev-story`** to implement the task with its tests together —
    the DoD requires the project quality gate to pass (build/lint clean, tests green).
-5. **qa-generate-e2e-tests (worker / tea).** **Invoke `qa-generate-e2e-tests`** to add the
+8. **qa-generate-e2e-tests (worker / tea).** **Invoke `qa-generate-e2e-tests`** to add the
    end-to-end/acceptance tests for the task's behavior.
-6. **story-automator-review cycle (reviewer — a *separate* subagent, never the worker self-reviewing).** The
+9. **story-automator-review cycle (reviewer — a *separate* subagent, never the worker self-reviewing).** The
    reviewer **invokes `story-automator-review`** + runs the full quality gate (the same one CI runs). Treat
    findings as blocking; bump `review_cycle`. Loop dev-story → review **until clean**, up to ~5 cycles. If it
    won't converge, record why via `--notes` and raise it.
-7. **Verify against acceptance criteria.** Criterion by criterion, each observably true; tick as they pass
+10. **Verify against acceptance criteria.** Criterion by criterion, each observably true; tick as they pass
    (`--check-ac <n>`). Never tick what you haven't shown.
-8. **Record & close.** Tick DoD items (`--check-dod <n>`), record in `--notes` which BMAD skills this story
-   actually ran (Rule 3's evidence trail), add a decision note if worth keeping, then `backlog task edit
-   <id> -s "Done"`.
-9. **Integrate.** Commit on the sub-branch (message references `task-<id>`); `git checkout feature/<epic> &&
+11. **Record & close.** Tick DoD items (`--check-dod <n>`), record in `--notes` which BMAD, CodeGraph, and
+   Serena tools this story actually ran (Rule 3's evidence trail), add a decision note if worth keeping,
+   then `backlog task edit <id> -s "Done"`.
+12. **Integrate.** Commit on the sub-branch (message references `task-<id>`); `git checkout feature/<epic> &&
    git merge --no-ff feature/<epic>-task-<id>`; `git branch -d feature/<epic>-task-<id>`. Clear
-   `active_story`; update state.
-10. **Next.** Return to the top with the next dependency-ready task. When the epic's tasks are Done, proceed
+   `active_story`, `story_preflight`, and `code_intelligence`; update state.
+13. **Next.** Return to the top with the next dependency-ready task. When the epic's tasks are Done, proceed
     to the Phase 6 epic gate.
 
 Honor the repo's branching, PR/review, and versioning conventions (`CONTRIBUTING.md`) for commit and merge
@@ -321,8 +512,10 @@ criterion is observably satisfied and ticked, and the work is committed on its s
 `definition_of_done`).
 
 ## When stuck
-Re-read the relevant design doc. For BMAD mechanics, read the module sources rather than guessing. If a
-task's acceptance criteria seem to contradict a doc, that's a real conflict — stop and surface it.
+Re-read the relevant design doc. For code-structure uncertainty inside Full SDLC development, run the
+code-intelligence discovery sub-process before widening manual search. For BMAD mechanics, read the module
+sources rather than guessing. If a task's acceptance criteria seem to contradict a doc, that's a real
+conflict — stop and surface it.
 
 <!-- Next-Move-Theory-Rules:start -->
 # Next Move Theory — rules for your AI agent

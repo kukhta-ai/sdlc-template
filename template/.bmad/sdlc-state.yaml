@@ -12,6 +12,24 @@ epic: null               # the epic in flight (e.g. the foundation epic), or nul
 active_story: null       # the backlog task being built, or null
 review_cycle: 0
 
+# Preflight is populated before a candidate task is claimed. For XL, active_story remains null until the
+# task is split or a human explicitly approves continuation.
+story_preflight:
+  task: null
+  size: null             # XS | S | M | L | XL
+  reason: null
+  code_intelligence_required: null
+  xl_disposition: null   # null | split-required | human-approved
+
+# Read-only discovery evidence for the active story. Clear it after story integration.
+code_intelligence:
+  status: not-run        # not-run | complete | fallback
+  tools_used: []
+  telemetry_controls: []
+  indexes_used: []
+  findings: []
+  fallbacks: []
+
 # Persistent BMAD specialists: SPAWNed per-phase, RESUMEd thereafter.
 # last_skill = the BMAD skill each LAST actually invoked (AGENTS.md Rule 3 evidence).
 specialists:
@@ -36,6 +54,8 @@ tooling:
     bmm: null
     tea: null
     automator: null
+  codegraph: null           # e.g. "@colbymchenry/codegraph@1.1.2"
+  serena: null              # e.g. "serena-agent==1.5.3"
   tool_target: "claude-code"
 
 last_updated: null

@@ -19,7 +19,7 @@ template/                Payload copied into a new generated project root.
 root backlog/            Real maintenance backlog for sdlc-template tasks.
 template/backlog/        Empty seed backlog fixture for generated projects.
 scripts/init-project.sh  Maintainer script that creates a project from template/.
-template/scripts/setup.sh Generated-project bootstrap for Backlog.md and BMAD tooling.
+template/scripts/setup.sh Generated-project bootstrap for Backlog.md, BMAD, CodeGraph, and Serena tooling.
 ```
 
 Root `AGENTS.md` is the active instruction file for this repository. `template/AGENTS.md` is product content.
@@ -32,7 +32,7 @@ A generated project should see the same shape the original template promised:
 
 - `AGENTS.md` at repo root
 - `CONTRIBUTING.md` at repo root
-- `docs/SDLC.md` and `docs/task-writing-conventions.md`
+- `docs/SDLC.md`, `docs/code-intelligence-tools.md`, and `docs/task-writing-conventions.md`
 - an empty initialized `backlog/`
 - `.bmad/sdlc-state.yaml`
 - `.claude/` backlog-protection hooks and Claude-compatible Next Move Theory skills
@@ -40,10 +40,34 @@ A generated project should see the same shape the original template promised:
 - `Next-Move-Theory-Canon/`, `.nmt-version`, and `NextMoveTheory-README.md` for the installed NMT skill
   family
 - `.github/` CI and PR template
-- `scripts/setup.sh` for Backlog.md and BMAD installation
+- `scripts/setup.sh` for Backlog.md, BMAD, CodeGraph, and Serena installation
+- `scripts/codegraph-telemetry-off.sh` and `scripts/serena-telemetry-off.sh` for reporting-disabled tool launch
 
 The payload should not mention `template/` in normal generated-project instructions, because that directory
 will not exist after copying.
+
+## Process Routing Contract
+
+`AGENTS.md` is a process router. Focused work is the default for ordinary questions, setup, repository
+operations, investigation, and narrow edits. Backlog planning owns task structure without claiming work.
+Full SDLC development starts only for an explicit full-process request or a qualifying Backlog.md
+implementation task. Locally present `.sdlc/processes/*.md` files can register additional processes through
+the same trigger, state, gate, exit, and compatibility contract; absent extensions are never inferred.
+
+Full SDLC story work performs size preflight before claiming a task. An XL task remains To Do, with no story
+branch and no active-story state, until it is split or a human explicitly accepts continuation.
+
+## Code-Intelligence Contract
+
+CodeGraph and Serena provide optional, read-only discovery. Their wrappers replace inherited telemetry and
+usage-reporting values with disabled values on every launch, block CodeGraph's release-download fallback,
+and force Serena MCP use into read-only planning mode. Setup pins and verifies versions, makes Serena project
+configuration read-only, validates switches before installation, and treats installation opt-outs as
+authoritative over initialization and client registration.
+
+MCP registration is disabled by default. Explicit registrations have project-specific names and launch the
+absolute wrappers from the generated project. Missing tools or indexes fall back to repository-native
+read-only discovery, with the fallback recorded in the seeded SDLC state fields.
 
 ## Initializer Contract
 
