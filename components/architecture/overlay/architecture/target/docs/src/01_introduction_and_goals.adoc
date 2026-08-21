@@ -1,0 +1,30 @@
+ifndef::imagesdir[:imagesdir: ../images]
+
+[[section-introduction-and-goals]]
+== Introduction and Goals
+
+
+
+
+
+=== Requirements Overview
+
+TODO: Summarize the requirements that drive the architecture of __PROJECT_NAME__ and link to the canonical
+product requirements.
+
+=== Quality Goals
+
+TODO: Record the three to five architecture qualities that matter most and make them measurable.
+
+=== Stakeholders
+
+
+
+
+
+[options="header",cols="1,2,2"]
+|===
+|Role/Name|Contact|Expectations
+| _<Role-1>_ | _<Contact-1>_ | _<Expectation-1>_
+| _<Role-2>_ | _<Contact-2>_ | _<Expectation-2>_
+|===

@@ -1,0 +1,15 @@
+# Local orchestration / agent state for this maintainer repository.
+.omc/
+.remember/
+
+# Backlog.md transient locks. Task state itself is committed.
+backlog/.locks/
+template/backlog/.locks/
+
+# Temporary generated projects used while testing scripts/init-project.sh.
+.tmp/
+tmp/
+
+# OS / editor cruft.
+.DS_Store
+*.swp

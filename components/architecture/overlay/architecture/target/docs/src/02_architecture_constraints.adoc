@@ -1,0 +1,6 @@
+ifndef::imagesdir[:imagesdir: ../images]
+
+[[section-architecture-constraints]]
+== Architecture Constraints
+
+TODO: Record only constraints that materially limit architecture choices for __PROJECT_NAME__.

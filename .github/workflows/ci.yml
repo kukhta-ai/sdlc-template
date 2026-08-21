@@ -1,0 +1,252 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+    branches: [dev, main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gate:
+    name: maintainer gate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Shell syntax
+        run: |
+          bash -n scripts/init-project.sh
+          bash -n template/scripts/setup.sh
+          bash -n template/scripts/codegraph-telemetry-off.sh
+          bash -n template/scripts/serena-telemetry-off.sh
+          bash -n components/architecture/overlay/scripts/architecture.sh
+          bash -n tests/code-intelligence-tooling.sh
+          bash -n tests/fixtures/fake-cli.sh
+
+      - name: Code-intelligence safety contract
+        run: bash tests/code-intelligence-tooling.sh
+
+      - name: Root and payload boundaries
+        run: |
+          set -o pipefail
+
+          test -f AGENTS.md
+          test -f template/AGENTS.md
+          test -f template/scripts/setup.sh
+          test -f template/scripts/codegraph-telemetry-off.sh
+          test -f template/scripts/serena-telemetry-off.sh
+          test -f template/docs/SDLC.md
+          test -f template/docs/code-intelligence-tools.md
+          test -f template/docs/task-writing-conventions.md
+          test -f template/licenses/SDLC-TEMPLATE-MIT.txt
+          cmp -s LICENSE template/licenses/SDLC-TEMPLATE-MIT.txt
+          test -f components/architecture/overlay/architecture/compose.yaml
+          test -f components/architecture/overlay/.sdlc/processes/architecture-documentation.md
+          test -f components/architecture/overlay/docs/architecture.md
+          test -f components/architecture/overlay/scripts/architecture.sh
+          test -f .serena/project.yml
+          test -f .serena/.gitignore
+          test -f tests/code-intelligence-tooling.sh
+          test -f docs/sdlc-persistent-subagent-sequence.html
+          test -d backlog
+          test -d template/backlog
+          test ! -f docs/SDLC.md
+          test ! -f template/docs/sdlc-persistent-subagent-sequence.html
+          test ! -f scripts/setup.sh
+          legacy_nmt_paths=(
+            template/Next-Move-Theory-Canon
+            template/NextMoveTheory-README.md
+            template/.nmt-version
+            template/.agents/skills/PRODUCER-CONTRACT.md
+            template/.agents/skills/READABILITY-CONTRACT.md
+            template/.claude/skills/PRODUCER-CONTRACT.md
+            template/.claude/skills/READABILITY-CONTRACT.md
+          )
+          for legacy_path in "${legacy_nmt_paths[@]}"; do
+            if [ -e "$legacy_path" ] || [ -L "$legacy_path" ]; then
+              echo "removed NMT path still exists: $legacy_path" >&2
+              exit 1
+            fi
+          done
+
+          nmt_marker='next([[:space:]_-]*move[[:space:]_-]*theory)|(^|[^[:alnum:]_])nmt([^[:alnum:]_]|$)'
+          tracked_path_inventory="$(mktemp)"
+          trap 'rm -f "$tracked_path_inventory"' EXIT
+          if ! git ls-files -z -- \
+            AGENTS.md CONTRIBUTING.md README.md docs scripts template components \
+            .github/PULL_REQUEST_TEMPLATE.md >"$tracked_path_inventory"; then
+            echo "failed to inventory maintained source paths" >&2
+            exit 1
+          fi
+          if grep -z -i -E "$nmt_marker" "$tracked_path_inventory"; then
+            echo "maintained source path still names removed NMT content" >&2
+            exit 1
+          else
+            scan_status=$?
+            if [ "$scan_status" -ne 1 ]; then
+              echo "failed to scan maintained source paths for removed NMT content" >&2
+              exit "$scan_status"
+            fi
+          fi
+
+          if git grep -n -i -E "$nmt_marker" -- \
+            AGENTS.md CONTRIBUTING.md README.md docs scripts template components \
+            .github/PULL_REQUEST_TEMPLATE.md; then
+            echo "maintained source still references removed NMT content" >&2
+            exit 1
+          else
+            scan_status=$?
+            if [ "$scan_status" -ne 1 ]; then
+              echo "failed to scan maintained source content for removed NMT content" >&2
+              exit "$scan_status"
+            fi
+          fi
+
+          overlap="$(LC_ALL=C comm -12 \
+            <(cd template && find . \( -type f -o -type l \) -printf '%P\n' | LC_ALL=C sort) \
+            <(cd components/architecture/overlay && find . \( -type f -o -type l \) -printf '%P\n' | LC_ALL=C sort))"
+          if [ -n "$overlap" ]; then
+            echo "architecture overlay must not replace base payload files:" >&2
+            echo "$overlap" >&2
+            exit 1
+          fi
+
+      - name: Generate base and architecture variants
+        run: |
+          base_output="$(mktemp -d)"
+          architecture_output="$(mktemp -d)"
+          source_fixture="$(mktemp -d)"
+          source_link="${source_fixture}.link"
+          generated_path_inventory="$(mktemp)"
+          trap 'rm -rf "$base_output" "$architecture_output" "$source_fixture" "$source_link"; rm -f "$generated_path_inventory"' EXIT
+
+          mkdir -p "$source_fixture/scripts"
+          cp scripts/init-project.sh "$source_fixture/scripts/"
+          cp -a template components "$source_fixture/"
+          if bash "$source_fixture/scripts/init-project.sh" "$source_fixture" \
+            --name "Rejected Root" --force --no-git >"$source_fixture/root-guard.log" 2>&1; then
+            echo "initializer accepted its maintainer repository as the destination" >&2
+            exit 1
+          fi
+          grep -Fq 'destination cannot be the maintainer repository' "$source_fixture/root-guard.log"
+          test ! -e "$source_fixture/AGENTS.md"
+
+          ln -s "$source_fixture" "$source_link"
+          if bash "$source_link/scripts/init-project.sh" "$source_fixture" \
+            --name "Rejected Linked Root" --force --no-git \
+            >"$source_fixture/linked-root-guard.log" 2>&1; then
+            echo "initializer invoked through a symlink accepted its maintainer repository" >&2
+            exit 1
+          fi
+          grep -Fq 'destination cannot be the maintainer repository' \
+            "$source_fixture/linked-root-guard.log"
+          test ! -e "$source_fixture/AGENTS.md"
+
+          bash scripts/init-project.sh "$base_output" --name "Base Fixture" --no-git
+          test ! -e "$base_output/architecture"
+          test ! -e "$base_output/docs/architecture.md"
+          test ! -e "$base_output/.sdlc/processes/architecture-documentation.md"
+          test ! -e "$base_output/scripts/architecture.sh"
+          test ! -e "$base_output/.github/workflows/architecture.yml"
+
+          bash scripts/init-project.sh "$architecture_output" \
+            --name "Architecture Fixture" --no-git --with-architecture
+          test -f "$architecture_output/architecture/compose.yaml"
+          test -f "$architecture_output/docs/architecture.md"
+          test -f "$architecture_output/.sdlc/processes/architecture-documentation.md"
+          test -x "$architecture_output/scripts/architecture.sh"
+          test -f "$architecture_output/.github/workflows/architecture.yml"
+          grep -Fq 'Full SDLC story shaping' \
+            "$architecture_output/.sdlc/processes/architecture-documentation.md"
+
+          nmt_marker='next([[:space:]_-]*move[[:space:]_-]*theory)|(^|[^[:alnum:]_])nmt([^[:alnum:]_]|$)'
+          legacy_nmt_paths=(
+            Next-Move-Theory-Canon
+            NextMoveTheory-README.md
+            .nmt-version
+            .agents/skills/PRODUCER-CONTRACT.md
+            .agents/skills/READABILITY-CONTRACT.md
+            .claude/skills/PRODUCER-CONTRACT.md
+            .claude/skills/READABILITY-CONTRACT.md
+          )
+          for generated_output in "$base_output" "$architecture_output"; do
+            test -f "$generated_output/licenses/SDLC-TEMPLATE-MIT.txt"
+            cmp -s LICENSE "$generated_output/licenses/SDLC-TEMPLATE-MIT.txt"
+            for legacy_path in "${legacy_nmt_paths[@]}"; do
+              if [ -e "$generated_output/$legacy_path" ] || \
+                [ -L "$generated_output/$legacy_path" ]; then
+                echo "generated project contains removed NMT path: $generated_output/$legacy_path" >&2
+                exit 1
+              fi
+            done
+
+            if ! (cd "$generated_output" && find -P . -mindepth 1 -print0) \
+              >"$generated_path_inventory"; then
+              echo "failed to inventory generated project paths: $generated_output" >&2
+              exit 1
+            fi
+            if grep -z -i -E "$nmt_marker" "$generated_path_inventory"; then
+              echo "generated project path names removed NMT content: $generated_output" >&2
+              exit 1
+            else
+              scan_status=$?
+              if [ "$scan_status" -ne 1 ]; then
+                echo "failed to scan generated project paths: $generated_output" >&2
+                exit "$scan_status"
+              fi
+            fi
+
+            if grep -r -n -i -E "$nmt_marker" "$generated_output"; then
+              echo "generated project contains removed NMT content: $generated_output" >&2
+              exit 1
+            else
+              scan_status=$?
+              if [ "$scan_status" -ne 1 ]; then
+                echo "failed to scan generated project content: $generated_output" >&2
+                exit "$scan_status"
+              fi
+            fi
+          done
+
+          diff -u \
+            <(
+              {
+                cd "$base_output"
+                find . \( -type f -o -type l \) -printf '%P %y %m\n'
+                cd "$GITHUB_WORKSPACE/components/architecture/overlay"
+                find . \( -type f -o -type l \) -printf '%P %y %m\n'
+              } | LC_ALL=C sort
+            ) \
+            <(
+              cd "$architecture_output"
+              find . \( -type f -o -type l \) -printf '%P %y %m\n' | LC_ALL=C sort
+            )
+
+          if grep -R -n -I -E '__PROJECT_(NAME(_DSL)?|SLUG)__' "$base_output" "$architecture_output"; then
+            echo "unresolved project placeholder in generated output" >&2
+            exit 1
+          fi
+          if grep -R -n -I -E '(^|[^[:alnum:]_])(template/|components/architecture/overlay)' \
+            "$architecture_output/architecture" \
+            "$architecture_output/docs/architecture.md" \
+            "$architecture_output/.sdlc/processes"; then
+            echo "maintainer-only source path leaked into architecture output" >&2
+            exit 1
+          fi
+
+          docker compose -f "$architecture_output/architecture/compose.yaml" config --quiet
+          test "$(docker compose -f "$architecture_output/architecture/compose.yaml" config --services)" = \
+            "target-architecture"
+          test "$(docker compose -f "$architecture_output/architecture/compose.yaml" config --profiles)" = \
+            "optional"
+          bash "$architecture_output/scripts/architecture.sh" validate
+
+      - name: Whitespace check
+        run: |
+          empty_tree="$(git hash-object -t tree /dev/null)"
+          git diff --check "$empty_tree" HEAD

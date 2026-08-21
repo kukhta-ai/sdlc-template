@@ -1,0 +1,16 @@
+# Maintainer state for the sdlc-template repository.
+# Generated projects receive their own blank SDLC state at template/.bmad/sdlc-state.yaml.
+
+project: sdlc-template
+mode: template-maintenance
+branch: feature/template-setup-onboarding
+active_backlog: backlog/
+template_payload: template/
+active_task: null
+last_updated: 2026-06-14
+
+notes:
+  - Root AGENTS.md governs this maintainer repository.
+  - template/AGENTS.md is generated-project payload content.
+  - Root backlog/ is the real maintenance backlog.
+  - template/backlog/ is the generated-project seed backlog fixture.
