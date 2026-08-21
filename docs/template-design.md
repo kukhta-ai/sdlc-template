@@ -36,10 +36,7 @@ A generated project should see the same shape the original template promised:
 - `docs/SDLC.md`, `docs/code-intelligence-tools.md`, and `docs/task-writing-conventions.md`
 - an empty initialized `backlog/`
 - `.bmad/sdlc-state.yaml`
-- `.claude/` backlog-protection hooks and Claude-compatible Next Move Theory skills
-- `.agents/skills/` Codex-compatible Next Move Theory skills
-- `Next-Move-Theory-Canon/`, `.nmt-version`, and `NextMoveTheory-README.md` for the installed NMT skill
-  family
+- `.claude/` backlog-protection hooks
 - `.github/` CI and PR template
 - `scripts/setup.sh` for Backlog.md, BMAD, CodeGraph, and Serena installation
 - `scripts/codegraph-telemetry-off.sh` and `scripts/serena-telemetry-off.sh` for reporting-disabled tool launch
