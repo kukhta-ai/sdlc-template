@@ -33,6 +33,8 @@ jobs:
 
       - name: Root and payload boundaries
         run: |
+          set -o pipefail
+
           test -f AGENTS.md
           test -f template/AGENTS.md
           test -f template/scripts/setup.sh
@@ -54,6 +56,54 @@ jobs:
           test ! -f docs/SDLC.md
           test ! -f template/docs/sdlc-persistent-subagent-sequence.html
           test ! -f scripts/setup.sh
+          legacy_nmt_paths=(
+            template/Next-Move-Theory-Canon
+            template/NextMoveTheory-README.md
+            template/.nmt-version
+            template/.agents/skills/PRODUCER-CONTRACT.md
+            template/.agents/skills/READABILITY-CONTRACT.md
+            template/.claude/skills/PRODUCER-CONTRACT.md
+            template/.claude/skills/READABILITY-CONTRACT.md
+          )
+          for legacy_path in "${legacy_nmt_paths[@]}"; do
+            if [ -e "$legacy_path" ] || [ -L "$legacy_path" ]; then
+              echo "removed NMT path still exists: $legacy_path" >&2
+              exit 1
+            fi
+          done
+
+          nmt_marker='next([[:space:]_-]*move[[:space:]_-]*theory)|(^|[^[:alnum:]_])nmt([^[:alnum:]_]|$)'
+          tracked_path_inventory="$(mktemp)"
+          trap 'rm -f "$tracked_path_inventory"' EXIT
+          if ! git ls-files -z -- \
+            AGENTS.md CONTRIBUTING.md README.md docs scripts template components \
+            .github/PULL_REQUEST_TEMPLATE.md >"$tracked_path_inventory"; then
+            echo "failed to inventory maintained source paths" >&2
+            exit 1
+          fi
+          if grep -z -i -E "$nmt_marker" "$tracked_path_inventory"; then
+            echo "maintained source path still names removed NMT content" >&2
+            exit 1
+          else
+            scan_status=$?
+            if [ "$scan_status" -ne 1 ]; then
+              echo "failed to scan maintained source paths for removed NMT content" >&2
+              exit "$scan_status"
+            fi
+          fi
+
+          if git grep -n -i -E "$nmt_marker" -- \
+            AGENTS.md CONTRIBUTING.md README.md docs scripts template components \
+            .github/PULL_REQUEST_TEMPLATE.md; then
+            echo "maintained source still references removed NMT content" >&2
+            exit 1
+          else
+            scan_status=$?
+            if [ "$scan_status" -ne 1 ]; then
+              echo "failed to scan maintained source content for removed NMT content" >&2
+              exit "$scan_status"
+            fi
+          fi
 
           overlap="$(LC_ALL=C comm -12 \
             <(cd template && find . \( -type f -o -type l \) -printf '%P\n' | LC_ALL=C sort) \
@@ -70,7 +120,8 @@ jobs:
           architecture_output="$(mktemp -d)"
           source_fixture="$(mktemp -d)"
           source_link="${source_fixture}.link"
-          trap 'rm -rf "$base_output" "$architecture_output" "$source_fixture" "$source_link"' EXIT
+          generated_path_inventory="$(mktemp)"
+          trap 'rm -rf "$base_output" "$architecture_output" "$source_fixture" "$source_link"; rm -f "$generated_path_inventory"' EXIT
 
           mkdir -p "$source_fixture/scripts"
           cp scripts/init-project.sh "$source_fixture/scripts/"
@@ -110,6 +161,53 @@ jobs:
           test -f "$architecture_output/.github/workflows/architecture.yml"
           grep -Fq 'Full SDLC story shaping' \
             "$architecture_output/.sdlc/processes/architecture-documentation.md"
+
+          nmt_marker='next([[:space:]_-]*move[[:space:]_-]*theory)|(^|[^[:alnum:]_])nmt([^[:alnum:]_]|$)'
+          legacy_nmt_paths=(
+            Next-Move-Theory-Canon
+            NextMoveTheory-README.md
+            .nmt-version
+            .agents/skills/PRODUCER-CONTRACT.md
+            .agents/skills/READABILITY-CONTRACT.md
+            .claude/skills/PRODUCER-CONTRACT.md
+            .claude/skills/READABILITY-CONTRACT.md
+          )
+          for generated_output in "$base_output" "$architecture_output"; do
+            for legacy_path in "${legacy_nmt_paths[@]}"; do
+              if [ -e "$generated_output/$legacy_path" ] || \
+                [ -L "$generated_output/$legacy_path" ]; then
+                echo "generated project contains removed NMT path: $generated_output/$legacy_path" >&2
+                exit 1
+              fi
+            done
+
+            if ! (cd "$generated_output" && find -P . -mindepth 1 -print0) \
+              >"$generated_path_inventory"; then
+              echo "failed to inventory generated project paths: $generated_output" >&2
+              exit 1
+            fi
+            if grep -z -i -E "$nmt_marker" "$generated_path_inventory"; then
+              echo "generated project path names removed NMT content: $generated_output" >&2
+              exit 1
+            else
+              scan_status=$?
+              if [ "$scan_status" -ne 1 ]; then
+                echo "failed to scan generated project paths: $generated_output" >&2
+                exit "$scan_status"
+              fi
+            fi
+
+            if grep -r -n -i -E "$nmt_marker" "$generated_output"; then
+              echo "generated project contains removed NMT content: $generated_output" >&2
+              exit 1
+            else
+              scan_status=$?
+              if [ "$scan_status" -ne 1 ]; then
+                echo "failed to scan generated project content: $generated_output" >&2
+                exit "$scan_status"
+              fi
+            fi
+          done
 
           diff -u \
             <(

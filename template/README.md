@@ -5,7 +5,7 @@ agent SDLC**: a lightweight process router for everyday work plus specialist age
 task graph, sequential git branching, and human gates for full development tasks. Clone it and point an
 agent at `AGENTS.md`; the router selects the narrowest matching process.
 
-It ships the **process layer** plus product-decision skills — nothing here assumes a language or toolchain.
+It ships the **process layer** only — nothing here assumes a language or toolchain.
 You plug in your stack's build/lint/test commands in one place (the **quality gate**), and the whole process
 (pre-commit, CI, the backlog Definition of Done) refers back to it.
 
@@ -22,11 +22,7 @@ CONTRIBUTING.md      Quality gate (you fill in) + branching / PR / versioning co
 CHANGELOG.md         Keep-a-Changelog stub.
 backlog/             Backlog.md, initialized: config.yml (placeholder name + DoD) + empty task dirs.
 .bmad/sdlc-state.yaml  Blank SDLC state tracker — Step 0 fills it in.
-.claude/             Hookify backlog-protection rules + Claude-compatible Next Move Theory skills.
-.agents/skills/      Codex-compatible Next Move Theory skills, invoked as $nmt-...
-Next-Move-Theory-Canon/        Canon read by the Next Move Theory skills.
-NextMoveTheory-README.md       Reference README for the installed Next Move Theory skill family.
-.nmt-version         Installed Next Move Theory version marker.
+.claude/             Hookify backlog-protection rules.
 .github/             CI workflow (placeholder quality gate) + PR template.
 scripts/setup.sh     Installs Backlog.md, BMAD, CodeGraph, and Serena at pinned versions.
 scripts/codegraph-telemetry-off.sh  Runs installed CodeGraph reporting-off with self-download disabled.
@@ -34,8 +30,8 @@ scripts/serena-telemetry-off.sh     Runs installed Serena reporting-off; MCP sta
 .gitignore           Transient/local state only — BMAD's install is committed to your project, not ignored.
 ```
 
-The template itself ships **without** the BMAD install, but it does include Next Move Theory canon + skills.
-`scripts/setup.sh` installs BMAD and the code-intelligence CLIs. Commit BMAD's `_bmad/` and
+The template itself ships **without** the BMAD install. `scripts/setup.sh` installs BMAD and the
+code-intelligence CLIs. Commit BMAD's `_bmad/` and
 `.claude/skills/bmad-*` plus Serena's `.serena/project.yml`; CodeGraph's index, Serena caches/logs, and
 personal configuration stay local.
 
@@ -75,9 +71,9 @@ absent, no process extension is active and agents must not infer or fetch one.
 
 ## Dependencies
 
-This template ships the **process layer** and the Next Move Theory product-decision canon + skills. BMAD,
-CodeGraph, and Serena are installed at project init by `scripts/setup.sh`. BMAD is committed to your project;
-code-intelligence indexes and personal configuration remain local:
+This template ships the **process layer**. BMAD, CodeGraph, and Serena are installed at project init by
+`scripts/setup.sh`. BMAD is committed to your project; code-intelligence indexes and personal configuration
+remain local:
 
 - **[Backlog.md](https://github.com/MrLesk/Backlog.md)** — the markdown task tracker the whole SDLC runs on
   (`backlog/`). Installed as a global CLI.
@@ -85,9 +81,6 @@ code-intelligence indexes and personal configuration remain local:
   points, flows, call paths, and blast radius. Project wrappers force telemetry off.
 - **[Serena](https://github.com/oraios/serena)** — semantic discovery for symbol overview and references.
   Project wrappers force usage reporting off.
-- **[Next Move Theory](https://github.com/zamesin/Next-Move-Theory-Canon-and-Skills)** — preinstalled canon
-  and NMT skills for product strategy, market research, value proposition, PRD, go-to-market, diagnosis, and
-  interview analysis. Claude Code invokes them as `/nmt-...`; Codex invokes them as `$nmt-...`.
 - **BMAD** modules, via `npx bmad-method install`:
   - `bmm` — the core method: the planning + build personas (analyst, pm, architect, sm, dev, tea, …) and
     their workflows.
