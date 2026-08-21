@@ -24,6 +24,7 @@ backlog/             Backlog.md, initialized: config.yml (placeholder name + DoD
 .bmad/sdlc-state.yaml  Blank SDLC state tracker — Step 0 fills it in.
 .claude/             Hookify backlog-protection rules.
 .github/             CI workflow (placeholder quality gate) + PR template.
+licenses/SDLC-TEMPLATE-MIT.txt  License notice for copied scaffold material.
 scripts/setup.sh     Installs Backlog.md, BMAD, CodeGraph, and Serena at pinned versions.
 scripts/codegraph-telemetry-off.sh  Runs installed CodeGraph reporting-off with self-download disabled.
 scripts/serena-telemetry-off.sh     Runs installed Serena reporting-off; MCP starts read-only.
@@ -41,8 +42,9 @@ absent, no process extension is active and agents must not infer or fetch one.
 
 ## Bootstrap a new project
 
-1. **Start the repo from this template** (clone, copy, or "Use this template" on GitHub). Initialize git and
-   create the working branches: `git checkout -b dev`.
+1. **Start from a generated scaffold.** The SDLC Template initializer creates the repository and checks out
+   `dev` unless it is run with `--no-git`. If these files were copied manually, initialize Git and create the
+   working branch yourself: `git init && git checkout -b dev`.
 2. **Install the agent tooling:**
    ```
    bash scripts/setup.sh
@@ -51,7 +53,7 @@ absent, no process extension is active and agents must not infer or fetch one.
    [Dependencies](#dependencies) for what each is and the by-hand commands.
 3. **Name the project** (via the CLI — never hand-edit `backlog/`):
    ```
-   backlog config set project_name "<your-project>"   # see: backlog config --help
+   backlog config set projectName "<your-project>"   # see: backlog config --help
    ```
    and replace `__PROJECT_NAME__` wherever it appears.
 4. **Define your quality gate** — fill in `CONTRIBUTING.md` → "Quality gate" with your stack's real
@@ -110,3 +112,13 @@ telemetry-off wrappers. See `docs/code-intelligence-tools.md` for supported clie
 > `scripts/setup.sh` installs the **agent tooling only.** Your project's own language toolchain (compiler,
 > linter, test runner) is a separate concern — add it as your first groundwork and wire its commands into
 > the **quality gate** (`CONTRIBUTING.md`), CI, the pre-commit hook, and `backlog/config.yml`.
+
+## Template License and Third-Party Notices
+
+Material supplied by SDLC Template is available under the MIT terms in
+[`licenses/SDLC-TEMPLATE-MIT.txt`](./licenses/SDLC-TEMPLATE-MIT.txt). This notice covers the copied scaffold;
+it does not choose a license for application code added to this project.
+
+Installed tools retain their upstream licenses. If the optional architecture component is present, its
+`architecture/UPSTREAM.md` and `architecture/licenses/` record separately licensed source material and the
+notices that must be preserved.

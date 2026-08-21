@@ -71,3 +71,23 @@ Generated-project branch conventions are part of the payload and live in `templa
 
 A PR should explain whether it changes the maintainer repo, the generated-project payload, or both. Include
 the root backlog task ID and the checks you ran. Do not self-merge to `dev` or `main`.
+
+## Versioning and Releases
+
+This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Changes integrate through
+`dev`; a reviewed promotion PR moves a release candidate to `main`. Release tags use `vX.Y.Z`. Before 1.0,
+minor releases may change the generated-project contract, and those changes must be called out in the
+changelog.
+
+Before tagging a release:
+
+1. Move the release notes from `Unreleased` to a dated version heading.
+2. Run the complete maintainer gate against the exact release candidate.
+3. Confirm the `dev` to `main` promotion PR is approved and green.
+4. Merge only after the required human gate, then create the matching tag and GitHub release.
+
+## Changelog
+
+Release history lives in [`CHANGELOG.md`](./CHANGELOG.md) and follows
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Add notable user-facing changes under
+`Unreleased`; do not use the changelog as a commit log.
