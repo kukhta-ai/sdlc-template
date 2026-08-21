@@ -43,6 +43,8 @@ jobs:
           test -f template/docs/SDLC.md
           test -f template/docs/code-intelligence-tools.md
           test -f template/docs/task-writing-conventions.md
+          test -f template/licenses/SDLC-TEMPLATE-MIT.txt
+          cmp -s LICENSE template/licenses/SDLC-TEMPLATE-MIT.txt
           test -f components/architecture/overlay/architecture/compose.yaml
           test -f components/architecture/overlay/.sdlc/processes/architecture-documentation.md
           test -f components/architecture/overlay/docs/architecture.md
@@ -173,6 +175,8 @@ jobs:
             .claude/skills/READABILITY-CONTRACT.md
           )
           for generated_output in "$base_output" "$architecture_output"; do
+            test -f "$generated_output/licenses/SDLC-TEMPLATE-MIT.txt"
+            cmp -s LICENSE "$generated_output/licenses/SDLC-TEMPLATE-MIT.txt"
             for legacy_path in "${legacy_nmt_paths[@]}"; do
               if [ -e "$generated_output/$legacy_path" ] || \
                 [ -L "$generated_output/$legacy_path" ]; then

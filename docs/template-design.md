@@ -38,6 +38,7 @@ A generated project should see the same shape the original template promised:
 - `.bmad/sdlc-state.yaml`
 - `.claude/` backlog-protection hooks
 - `.github/` CI and PR template
+- `licenses/SDLC-TEMPLATE-MIT.txt` for the copied scaffold's MIT notice without licensing application code
 - `scripts/setup.sh` for Backlog.md, BMAD, CodeGraph, and Serena installation
 - `scripts/codegraph-telemetry-off.sh` and `scripts/serena-telemetry-off.sh` for reporting-disabled tool launch
 

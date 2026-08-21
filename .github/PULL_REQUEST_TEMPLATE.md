@@ -11,6 +11,10 @@ Closes task-<id>
 ```text
 $ bash -n scripts/init-project.sh
 $ bash -n template/scripts/setup.sh
+$ bash -n template/scripts/codegraph-telemetry-off.sh
+$ bash -n template/scripts/serena-telemetry-off.sh
+$ bash -n components/architecture/overlay/scripts/architecture.sh
+$ bash tests/code-intelligence-tooling.sh
 $ git diff --check
 ```
 
